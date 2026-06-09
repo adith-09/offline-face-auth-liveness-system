@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datalake 3.0 — Offline Biometrics Console</title>
+    <!-- Professional Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- MediaPipe for Real-Time Liveness -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="glow-bg-sphere bg-sphere-1"></div>
+    <div class="glow-bg-sphere bg-sphere-2"></div>
+
+    <div class="app-dashboard-wrapper">
+        <!-- Main SaaS Navbar Header -->
+        <header class="dashboard-header">
+            <div class="brand-identity">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#logo-grad)" />
+                        <path d="M2 17L12 22L22 17M2 12L12 17L22 12" stroke="url(#logo-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="logo-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#6366f1" />
+                                <stop offset="1" stop-color="#14b8a6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="brand-name-group">
+                    <h1>DATALAKE 3.0</h1>
+                    <span class="sub-label">SECURE DECENTRALIZED AUTH</span>
+                </div>
+            </div>
+            
+            <div class="system-header-controls">
+                <div class="system-status-indicator">
+                    <span class="pulse-dot green"></span>
+                    <span class="status-label">OFFLINE ENGINE READY</span>
+                </div>
+                <div class="header-divider"></div>
+                <div class="network-toggle-wrapper">
+                    <label class="switch-label">NETWORK STATE</label>
+                    <div class="network-switch">
+                        <span class="switch-text offline active">OFFLINE</span>
+                        <input type="checkbox" id="network-toggle">
+                        <span class="switch-slider"></span>
+                        <span class="switch-text online">ONLINE</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Viewport Grid -->
+        <main class="dashboard-grid-layout">
+            
+            <!-- Column 1: Verification Controls & Input Settings -->
+            <section class="grid-card control-center-card">
+                <div class="card-header">
+                    <h2>
+                        <svg class="h-5 w-5 icon-indigo" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        IDENTITY CONTROLLER
+                    </h2>
+                </div>
+                
+                <div class="input-panel-section">
+                    <label class="control-label">Employee ID Input</label>
+                    <div class="input-action-row">
+                        <input type="text" id="user-id-input" placeholder="e.g. EMP_8842" value="EMP_8842">
+                        <button class="btn btn-primary" id="btn-enroll">Enroll</button>
+                    </div>
+                </div>
+
+                <div class="action-buttons-stack">
+                    <label class="control-label">Biometric Verification Runs</label>
+                    <button class="btn btn-accent" id="btn-verify">
+                        Verify Identity (Genuine Face)
+                    </button>
+                    <div class="sim-buttons-row">
+                        <button class="btn btn-outline" id="btn-simulate-mismatch">
+                            Simulate Mismatch
+                        </button>
+                        <button class="btn btn-outline" id="btn-simulate-spoof">
+                            Simulate Spoof
+                        </button>
+                    </div>
+                </div>
+
+                <div class="threshold-control-section">
+                    <div class="threshold-header">
+                        <span class="control-label">Verification Threshold</span>
+                        <span class="threshold-indicator font-mono">0.75</span>
+                    </div>
+                    <input type="range" id="threshold-slider" min="0.5" max="0.95" step="0.05" value="0.75" class="custom-range-slider">
+                    <span class="helper-text">Acceptable cosine similarity limit for matching face embeddings.</span>
+                </div>
+            </section>
+
+            <!-- Column 2: Live Viewport & Anti-Spoofing Analytics -->
+            <section class="grid-card viewport-card">
+                <div class="card-header">
+                    <h2>
+                        <svg class="h-5 w-5 icon-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        BIOMETRIC SCREENER
+                    </h2>
+                    <div class="header-sensor-tag font-mono">LUX: <span id="lux-value">120 (Optimal)</span></div>
+                </div>
+
+                <div class="camera-stream-wrapper">
+                    <!-- High-tech Viewfinder guides -->
+                    <div class="screener-scan-line"></div>
+                    <div class="screener-oval-guide"></div>
+                    <div class="viewport-hud-corners">
+                        <div class="hud-corner top-left"></div>
+                        <div class="hud-corner top-right"></div>
+                        <div class="hud-corner bottom-left"></div>
+                        <div class="hud-corner bottom-right"></div>
+                    </div>
+
+                    <!-- Webcam elements -->
+                    <video id="webcam" autoplay playsinline muted></video>
+                    <canvas id="face-mesh-canvas"></canvas>
+
+                    <!-- Falling standby viewport -->
+                    <div class="camera-standby-cover" id="camera-placeholder">
+                        <div class="camera-standby-logo"></div>
+                        <span class="standby-text">SYSTEM IN STANDBY MODE</span>
+                        <button class="btn btn-primary btn-sm" id="btn-enable-camera">Mount Device Web-Camera</button>
+                    </div>
+
+                    <!-- Interactive Notification Banner -->
+                    <div class="liveness-prompt-banner" id="liveness-prompt">
+                        <div class="prompt-content-row">
+                            <span class="prompt-icon-tag">✦</span>
+                            <div class="prompt-instruction">ALIGN FACE IN CENTER</div>
+                        </div>
+                        <div class="prompt-progress-track">
+                            <div class="progress-fill" id="prompt-progress"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 3: Identity Comparison Metrics -->
+            <section class="grid-card diagnostics-card">
+                <div class="card-header">
+                    <h2>
+                        <svg class="h-5 w-5 icon-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        DIAGNOSTICS & PIPELINE
+                    </h2>
+                </div>
+
+                <div class="diagnostics-panel-layout">
+                    <!-- Sim & Score -->
+                    <div class="diagnostics-score-group">
+                        <div class="metric-score-row">
+                            <div class="score-card">
+                                <span class="score-label">COSINE SIMILARITY</span>
+                                <span class="score-value cyan font-mono" id="similarity-score">0.000</span>
+                                <div class="score-track-bar"><div class="fill bg-cyan" id="similarity-bar"></div></div>
+                            </div>
+                            <div class="score-card">
+                                <span class="score-label">MATCH DECISION</span>
+                                <div class="similarity-indicator font-mono" id="similarity-status">IDLE</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Check List -->
+                    <div class="pipeline-checklist-group">
+                        <span class="control-label">LIVENESS PIPELINE TASKS</span>
+                        
+                        <div class="pipeline-task-item">
+                            <div class="task-metadata">
+                                <span class="task-badge passive">PASSIVE</span>
+                                <span class="task-title">Texture CNN (Anti-Spoof)</span>
+                            </div>
+                            <div class="task-result font-mono">
+                                <span id="passive-liveness-score">0.00% Live</span>
+                                <div class="task-mini-track"><div class="fill bg-teal" id="passive-liveness-bar"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-task-item">
+                            <div class="task-metadata">
+                                <span class="task-badge active">ACTIVE</span>
+                                <span class="task-title">Blink Check (EAR)</span>
+                            </div>
+                            <div class="task-result">
+                                <span class="task-status-text font-mono" id="active-blink-status">WAITING</span>
+                                <div class="task-led-light" id="blink-led"></div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-task-item">
+                            <div class="task-metadata">
+                                <span class="task-badge active">ACTIVE</span>
+                                <span class="task-title">Smile Check (MAR)</span>
+                            </div>
+                            <div class="task-result">
+                                <span class="task-status-text font-mono" id="active-smile-status">WAITING</span>
+                                <div class="task-led-light" id="smile-led"></div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-task-item">
+                            <div class="task-metadata">
+                                <span class="task-badge active">ACTIVE</span>
+                                <span class="task-title">Head Turn Check</span>
+                            </div>
+                            <div class="task-result">
+                                <span class="task-status-text font-mono" id="active-turn-status">WAITING</span>
+                                <div class="task-led-light" id="turn-led"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Latency Metrics -->
+                    <div class="latency-benchmarks-group">
+                        <span class="control-label font-mono">PIPELINE LATENCY</span>
+                        <div class="latency-log font-mono" id="latency-stats">
+                            <div>Face Detection:  -- ms</div>
+                            <div>Liveness Check:   -- ms</div>
+                            <div>MobileFaceNet:    -- ms</div>
+                            <div class="total-latency">Total E2E Delay:  -- ms</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 4 (Bottom-Left): Database Vault -->
+            <section class="grid-card database-vault-card">
+                <div class="card-header">
+                    <h2>
+                        <svg class="h-5 w-5 icon-indigo" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.58 4 8 4s8-1.79 8-4M4 7c0-2.21 3.58-4 8-4s8 1.79 8 4m0 5c0 2.21-3.58 4-8 4s-8-1.79-8-4"/>
+                        </svg>
+                        SQLCIPHER SECURE VAULT
+                    </h2>
+                    <button class="btn btn-outline btn-xs" id="btn-toggle-decryption">🔓 DECRYPT VAULT VIEW</button>
+                </div>
+
+                <div class="database-tabs-container">
+                    <div class="db-tabs-header">
+                        <button class="tab-btn active" data-tab="tab-enrollments">Enrolled Faces (AES-256)</button>
+                        <button class="tab-btn" data-tab="tab-logs">Sync Queue Logs</button>
+                    </div>
+
+                    <div class="tab-content active" id="tab-enrollments">
+                        <div class="database-table-wrapper">
+                            <table class="database-data-table" id="enrollments-table">
+                                <thead>
+                                    <tr>
+                                        <th>USER IDENTIFIER</th>
+                                        <th>128-D EMBEDDING VECTOR (SECURE AT REST)</th>
+                                        <th>TIMESTAMP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="placeholder-row">
+                                        <td colspan="3">Decrypt vault database to inspect vector embeddings.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-logs">
+                        <div class="database-table-wrapper">
+                            <table class="database-data-table" id="logs-table">
+                                <thead>
+                                    <tr>
+                                        <th>RECORD ID</th>
+                                        <th>USER ID</th>
+                                        <th>LIVENESS STAT</th>
+                                        <th>MATCH RESULT</th>
+                                        <th>GPS DATA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="placeholder-row">
+                                        <td colspan="5">No logs in offline sync buffer.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 5 (Bottom-Right): AWS Sync Center & Live Console -->
+            <section class="grid-card aws-sync-card">
+                <div class="card-header">
+                    <h2>
+                        <svg class="h-5 w-5 icon-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        AWS DEFERRED GATEWAY SYNC
+                    </h2>
+                </div>
+
+                <div class="sync-dashboard-panel">
+                    <div class="sync-status-tiles">
+                        <div class="sync-tile">
+                            <span class="tile-label">QUEUE LENGTH</span>
+                            <span class="tile-value font-mono" id="queue-size-badge">0</span>
+                        </div>
+                        <div class="sync-tile">
+                            <span class="tile-label">SYNC RETRIES</span>
+                            <span class="tile-value font-mono" id="sync-retries-badge">0</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-accent btn-block" id="btn-manual-sync">Push Local Logs Queue to AWS</button>
+                </div>
+
+                <div class="aws-terminal-shell">
+                    <div class="shell-header">
+                        <span class="shell-title font-mono">AWS GATEWAY STACK LOGGER</span>
+                        <div class="shell-window-dots">
+                            <span class="dot d-red"></span>
+                            <span class="dot d-yellow"></span>
+                            <span class="dot d-green"></span>
+                        </div>
+                    </div>
+                    <div class="shell-logs font-mono" id="aws-console">
+                        [INIT] AWS Sync socket listening... Waiting for server reconnection hook.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 6 (Full Width): Hardware Quantization Benchmarks -->
+            <section class="grid-card full-width benchmarks-card">
+                <div class="card-header">
+                    <h2>
+                        <svg class="h-5 w-5 icon-indigo" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        HARDWARE OPTIMIZATION BENCHMARKS
+                    </h2>
+                </div>
+
+                <div class="benchmarks-metrics-grid">
+                    <div class="benchmark-chart-column">
+                        <h3>Model File Size Comparison (Memory footprint)</h3>
+                        <div class="chart-wrapper">
+                            <div class="chart-row-bar">
+                                <span class="bar-label">FP32 Unquantized Model</span>
+                                <div class="bar-track">
+                                    <div class="fill bg-muted" style="width: 100%"></div>
+                                    <span class="bar-value font-mono">8.24 MB (100.0%)</span>
+                                </div>
+                            </div>
+                            <div class="chart-row-bar">
+                                <span class="bar-label">INT8 Post-Training Quantized (Sparsed)</span>
+                                <div class="bar-track">
+                                    <div class="fill bg-indigo" style="width: 25%"></div>
+                                    <span class="bar-value cyan font-mono">2.05 MB (24.9% — Saved 75.1%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="benchmark-chart-column">
+                        <h3>Total Pipeline Latency (Snapdragon 665 / Helio G80)</h3>
+                        <div class="chart-wrapper">
+                            <div class="chart-row-bar">
+                                <span class="bar-label">Base FP32 Engine Execution</span>
+                                <div class="bar-track">
+                                    <div class="fill bg-muted" style="width: 100%"></div>
+                                    <span class="bar-value font-mono">616 ms (Total Pipeline)</span>
+                                </div>
+                            </div>
+                            <div class="chart-row-bar">
+                                <span class="bar-label">MobileFaceNet INT8 + Landmarking CPU Delegate</span>
+                                <div class="bar-track">
+                                    <div class="fill bg-teal" style="width: 30%"></div>
+                                    <span class="bar-value green font-mono">185 ms (Saved 70.0% Delay)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+        
+        <footer class="app-dashboard-footer">
+            <p>Datalake 3.0 Biometrics Security Suite | Edge AI Platform | Open-Source BSD & Apache-2.0</p>
+        </footer>
+    </div>
+
+    <!-- Web resources JS -->
+    <script src="app.js"></script>
+</body>
+</html>

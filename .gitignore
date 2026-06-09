@@ -1,0 +1,10 @@
+node_modules/
+.expo/
+.env
+.env.*
+*.db
+aws_sync.db
+build/
+dist/
+android/app/build/
+ios/build/

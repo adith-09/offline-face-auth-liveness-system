@@ -1,0 +1,46 @@
+{
+  "name": "rn-offline-face-auth",
+  "version": "1.0.0",
+  "description": "Offline Facial Recognition & Liveness Detection Native Module for React Native Datalake 3.0",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "files": [
+    "src",
+    "lib",
+    "android",
+    "ios",
+    "rn-offline-face-auth.podspec",
+    "README.md"
+  ],
+  "scripts": {
+    "typescript": "tsc",
+    "build": "bob build"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "facial-recognition",
+    "liveness-detection",
+    "offline-first",
+    "biometric-authentication",
+    "tflite",
+    "coreml"
+  ],
+  "author": "Hackathon Developer",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "react-native-vision-camera": ">=2.15.0"
+  },
+  "devDependencies": {
+    "react": "18.2.0",
+    "react-native": "0.71.8",
+    "react-native-builder-bob": "^0.20.0",
+    "typescript": "^4.9.4"
+  }
+}

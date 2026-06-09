@@ -1,0 +1,26 @@
+{
+  "name": "DatalakeFaceAuthApp",
+  "version": "3.0.0",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-native": "0.71.8",
+    "react-native-vision-camera": "^2.15.4",
+    "rn-offline-face-auth": "file:../rn-offline-face-auth"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@react-native-community/eslint-config": "^3.2.0",
+    "@types/react": "^18.0.24",
+    "jest": "^29.3.1",
+    "typescript": "^4.9.4"
+  }
+}
